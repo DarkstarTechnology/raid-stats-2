@@ -1,0 +1,123 @@
+<form [formGroup]="settingsForm" novalidate (ngSubmit)="onSubmit()">
+  <mat-card class="settings-card">
+    <mat-card-title>Alliances</mat-card-title>
+    <mat-card-content>
+      <div class="row">
+        <div class="col full-width">
+          <mat-radio-group
+            aria-labelledby="alliance-radio-group-label"
+            class="alliance-radio-group"
+            
+            (change)="onRadioChange($event)"
+          >
+          <ng-container *ngFor="let alliance of savedAlliances">
+            <ng-container *ngIf="alliance.primary.length >= 2">
+            <mat-radio-button
+              class="alliance-radio-button"
+             
+              [value]="alliance"
+              [checked]="alliance === selectedAlliance"
+             
+            >
+              <div class="alliance-radio-row">
+                <div *ngIf="alliance.primary.length >= 2" class="col-tight">
+                  <div class="alliance-group">
+                    <span
+                      *ngFor="let race of alliance.primary"
+                      class="alliance-item"
+                    >
+                      {{ race }}
+                    </span>
+                  </div>
+                </div>
+                <div class="col-tight">
+                  <span> v. </span>
+                </div>
+               
+                <div *ngIf="alliance.secondary.length >= 2" class="col-tight">
+                  <div class="alliance-group">
+                    <span
+                      *ngFor="let race of alliance.secondary"
+                      class="alliance-item"
+                    >
+                      {{ race }}
+                    </span>
+                  </div>
+                </div>
+                <div *ngIf="alliance.tertiary.length >= 2" class="col-tight">
+                  <span> v. </span>
+                </div>
+                <div *ngIf="alliance.tertiary.length >= 2" class="col-tight">
+                  <div class="alliance-group">
+                    <span
+                      *ngFor="let race of alliance.tertiary"
+                      class="alliance-item"
+                    >
+                      {{ race }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </mat-radio-button>
+          </ng-container>
+        </ng-container>
+          </mat-radio-group>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col">
+          <mat-form-field>
+            <mat-label>Primary Alliance</mat-label>
+            <mat-select
+              formControlName="selectPrimary"
+              [(value)]="alliance.primary"
+              [errorStateMatcher]="matcher"
+              multiple
+            >
+              <mat-option *ngFor="let r of races" [value]="r">{{
+                r
+              }}</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+        <div class="col">
+          <mat-form-field>
+            <mat-label>Secondary Alliance</mat-label>
+            <mat-select
+              formControlName="selectSecondary"
+              [(value)]="alliance.secondary"
+              [errorStateMatcher]="matcher"
+              multiple
+            >
+              <mat-option *ngFor="let r of races" [value]="r">{{
+                r
+              }}</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+        <div class="col">
+          <mat-form-field>
+            <mat-label>Tertiary Alliance</mat-label>
+            <mat-select
+              formControlName="selectTertiary"
+              [(value)]="alliance.tertiary"
+              [errorStateMatcher]="matcher"
+              multiple
+            >
+              <mat-option *ngFor="let r of races" [value]="r">{{
+                r
+              }}</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </div>
+      <mat-divider></mat-divider>
+    </mat-card-content>
+    <mat-card-actions>
+      <div class="button-row">
+        <button mat-raised-button color="primary" (click)="saveAlliance()">Save</button>
+        <button mat-raised-button color="warn" (click)="deleteAlliance()">Delete</button>
+      </div>
+    </mat-card-actions>
+  </mat-card>
+</form>

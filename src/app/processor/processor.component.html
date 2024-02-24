@@ -1,0 +1,86 @@
+<mat-card class="processor-card">
+  <mat-card-header>
+    <mat-card-title>Raid Processor</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <mat-expansion-panel>
+      <mat-expansion-panel-header>
+        <mat-panel-title> Settings </mat-panel-title>
+        <mat-panel-description>
+          Adjust processor contraints
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+      <mat-divider></mat-divider>
+      <div class="slider-label-container">
+        <label>Raid Start Timeout</label>
+        <label>{{ timeoutSlider.value }}s</label>
+      </div>
+      <mat-slider min="5" max="50" step="5" showTickMarks>
+        <input
+          matSliderThumb
+          [(ngModel)]="raidStartTimeoutValue"
+          #timeoutSlider
+        />
+      </mat-slider>
+      <mat-divider></mat-divider>
+      <div class="range-selection">
+      <label class="radio-group-label" id="range-radio-group-label">Set the number of raids to process:</label>
+      <div class="range-selection-content">
+      <mat-radio-group
+        aria-labelledby="range-radio-group-label"
+        class="range-radio-group"
+        [(ngModel)]="rangeSetting">
+        <mat-radio-button class="range-radio-button" *ngFor="let option of rangeOptions" [value]="option">
+          {{option}}
+        </mat-radio-button>
+        
+      </mat-radio-group>
+      <div *ngIf="rangeSetting == 'Set Total'; else dateBlock">
+      <div class="slider-label-container">
+        <label>Raids to Process</label>
+        <label>{{ raidsSlider.value }}</label>
+      </div>
+      <mat-slider min="0" max="100" step="1" showTickMarks>
+        <input matSliderThumb [(ngModel)]="totalRaids" #raidsSlider />
+      </mat-slider>
+      </div>
+      <ng-template #dateBlock>
+        <div>
+        <mat-form-field>
+        <mat-label>Enter a date range</mat-label>
+            <mat-date-range-input [rangePicker]="rangePicker">
+              <input matStartDate placeholder="Start date" (dateChange)="addEvent('start', $event)"/>
+              <input matEndDate placeholder="End date" (dateChange)="addEvent('end', $event)"/>
+            </mat-date-range-input>
+            <mat-hint>MM/DD/YYYY – MM/DD/YYYY</mat-hint>
+            <mat-datepicker-toggle
+              matIconSuffix
+              [for]="rangePicker"
+            ></mat-datepicker-toggle>
+            <mat-date-range-picker #rangePicker>
+              <mat-date-range-picker-actions>
+                <button mat-button matDateRangePickerCancel>Cancel</button>
+                <button
+                  mat-raised-button
+                  color="primary"
+                  matDateRangePickerApply
+                >
+                  Apply
+                </button>
+              </mat-date-range-picker-actions>
+            </mat-date-range-picker>
+        </mat-form-field>
+        </div>
+      </ng-template>
+      </div>
+      </div>
+    </mat-expansion-panel>
+    <div class="action-buttons">
+      <button mat-raised-button [disabled]="isRunning" color="primary" (click)="runProcessor()">Run</button>
+      <button mat-raised-button [disabled]="!isRunning" color="warn">Stop</button>
+    </div>
+    <div *ngIf="isRunning" class="progress">
+      <mat-progress-bar [value]="progValue"></mat-progress-bar>
+    </div>
+  </mat-card-content>
+</mat-card>

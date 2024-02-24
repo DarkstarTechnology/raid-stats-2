@@ -1,0 +1,62 @@
+<mat-form-field>
+  <mat-label>Filter</mat-label>
+  <input matInput (keyup)="applyFilter($event)" placeholder="Ex. Mia" #input />
+</mat-form-field>
+<div class="mat-elevation-z8">
+ <!--  <div
+    class="player-loading-shade"
+    *ngIf="isLoadingResults || isRateLimitReached"
+  >
+    <mat-spinner *ngIf="isLoadingResults"></mat-spinner>
+    <div class="player-rate-limit-reached" *ngIf="isRateLimitReached">
+      Rate limit has been reached. It will be reset in one minute.
+    </div>
+  </div> -->
+  <table
+    mat-table
+    [dataSource]="playerDataSource"
+    class="mat-elevation-z0 player-table"
+    matSort
+  >
+    <ng-container matColumnDef="name">
+      <th mat-header-cell mat-sort-header *matHeaderCellDef>Name</th>
+      <td mat-cell mat-cell *matCellDef="let player">
+        {{ player.name }}
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="race">
+      <th mat-header-cell mat-sort-header *matHeaderCellDef>Race</th>
+      <td mat-cell mat-cell *matCellDef="let player">
+        {{ player.race }}
+      </td>
+    </ng-container>
+
+    <!--  <ng-container matColumnDef="avgTime">
+  <th mat-header-cell mat-header-cell *matHeaderCellDef> Avg Time </th>
+  <td mat-cell mat-cell *matCellDef="let player"> {{player.avgTime | number:'1.2-2' }} </td>
+  </ng-container>
+  
+  <ng-container matColumnDef="avgPosition">
+    <th mat-header-cell mat-header-cell *matHeaderCellDef> Avg Position </th>
+    <td mat-cell mat-cell *matCellDef="let player"> {{player.avgPosition | number:'1.2-2' }} </td>
+    </ng-container> -->
+
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr
+      mat-row
+      (click)="showPlayerStats(row)"
+      [class.player-row-is-clicked]="clickedRows.has(row)"
+      *matRowDef="let row; columns: displayedColumns"
+    ></tr>
+    <tr class="mat-row" *matNoDataRow>
+      <td class="mat-cell" colspan="2">
+        No data matching the filter "{{ input.value }}"
+      </td>
+    </tr>
+  </table>
+  <mat-paginator
+    [pageSizeOptions]="[10, 25, 100]"
+    aria-label="Select page of players"
+  ></mat-paginator>
+</div>

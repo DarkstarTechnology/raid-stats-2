@@ -1,0 +1,47 @@
+.settings-card {
+  min-width: 120px;
+  margin: 20px 6px;
+  padding: 16px;
+}
+
+.alliance-radio-group {
+  display: flex;
+  flex-direction: column;
+  margin: 8px 0;
+  
+}
+.alliance-radio-row {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  margin: 8px 0px;
+  align-items: center;
+}
+
+.alliance-group {
+  display: flex;
+  border: var(--mat-stepper-line-color) solid;
+    justify-content: center;
+}
+
+.alliance-item {
+  margin: 4px;
+}
+
+.alliance-radio-button {
+  margin: 5px;
+}
+
+.col-tight {
+  flex: 1;
+  margin: 8px 4px;
+}
+
+.button-row {
+  display: table-cell;
+  max-width: 600px;
+}
+
+.button-row .mat-mdc-button-base {
+  margin: 8px 8px 8px 0;
+}

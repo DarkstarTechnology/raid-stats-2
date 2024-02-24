@@ -1,0 +1,74 @@
+.full-width {
+  width: 100%;
+}
+
+.processor-card {
+  min-width: 120px;
+  margin: 20px 6px;
+}
+
+ .slider {
+  width:  800px;
+}
+
+.mat-radio-button {
+  display: block;
+  margin: 5px 0;
+}
+
+.row {
+  display: flex;
+  flex-direction: row;
+}
+
+.col {
+  flex: 1;
+  margin-right: 20px;
+}
+
+.col:last-child {
+  margin-right: 0;
+}
+
+.mat-mdc-slider {
+  width: 100%;
+  min-width: 148px;
+  
+}
+
+.slider-label-container {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 18px;
+  width: 100%;
+  min-width: 148px;
+}
+
+.range-radio-group {
+  display: flex;
+  flex-direction: column;
+ margin-bottom: 18px;
+  align-items: flex-start;
+}
+
+.range-radio-button {
+  margin: 3px;
+}
+
+.radio-group-label {
+  margin-top: 16px;
+}
+
+.range-selection {
+  margin-top: 16px;
+}
+
+.range-selection-content {
+  padding: 16px;
+}
+
+.action-buttons {
+  display: flex;
+  margin: 16px 0px;
+  gap: 8px;
+}

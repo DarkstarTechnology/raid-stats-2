@@ -1,0 +1,31 @@
+<div mat-dialog-content>
+  <ng-container *ngIf="playerStats$ | async as stats; else loading">
+    <mat-card>
+      <mat-card-header>
+       <!--  <div mat-card-avatar class="player-card-image"></div> -->
+        <mat-card-title>{{ stats.player.name }}</mat-card-title>
+      </mat-card-header>
+      <!-- <img
+        mat-card-image
+        [src]="'stats.player.race' + '.jpg'"
+        alt="Player Icon"
+      /> -->
+      <mat-card-content>
+        <p>Total Raids: {{ stats.totalRaids }}</p>
+        <p>Raid Participation: {{ stats.raidParticipation | percent:'1.2-2' }}</p>
+        <p>Average Time: {{ stats.avgTime | number:'1.2-2' }}</p>
+        <p>Average Position: {{ stats.avgPosition | number:'1.2-2' }}</p>
+        <p>Snipe Attempts: {{ stats.snipeAttempts }}</p>
+      </mat-card-content>
+      <mat-card-actions>
+        <button mat-button mat-dialog-close>Close</button>
+      </mat-card-actions>
+    </mat-card>
+  </ng-container>
+
+  <ng-template #loading>
+    <!-- Show loading indicator here -->
+    <mat-spinner diameter="50" color="primary"></mat-spinner>
+    <!-- Example: Using mat-spinner -->
+  </ng-template>
+</div>

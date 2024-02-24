@@ -1,0 +1,24 @@
+<mat-table [dataSource]="playerDataSource" class="mat-elevation-z8">
+<ng-container matColumnDef="name">
+  <mat-header-cell mat-header-cell *matHeaderCellDef> Name </mat-header-cell>
+  <mat-cell mat-cell *matCellDef="let player"> {{player.player.name}} </mat-cell>
+</ng-container>
+
+<ng-container matColumnDef="race">
+<mat-header-cell mat-header-cell *matHeaderCellDef> Race </mat-header-cell>
+<mat-cell mat-cell *matCellDef="let player"> {{player.player.race}} </mat-cell>
+</ng-container>
+
+<ng-container matColumnDef="avgTime">
+<mat-header-cell mat-header-cell *matHeaderCellDef> Avg Time </mat-header-cell>
+<mat-cell mat-cell *matCellDef="let player"> {{player.avgTime | number:'1.2-2' }} </mat-cell>
+</ng-container>
+
+<ng-container matColumnDef="avgPosition">
+  <mat-header-cell mat-header-cell *matHeaderCellDef> Avg Position </mat-header-cell>
+  <mat-cell mat-cell *matCellDef="let player"> {{player.avgPosition | number:'1.2-2' }} </mat-cell>
+  </ng-container>
+
+<mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+<mat-row matRipple *matRowDef="let row; columns: displayedColumns;"></mat-row>
+</mat-table>
