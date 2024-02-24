@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { IAlliance, Player, Race, Raid, db } from './db';
 
 import { HttpClient } from '@angular/common/http';
-import { RateLimiter } from 'limiter';
+//import { RateLimiter } from 'limiter';
 
 const attackMatch = /!(melee|mage|magic|range)/i;
 
@@ -11,10 +11,10 @@ const attackMatch = /!(melee|mage|magic|range)/i;
 })
 export class ProcessorService {
   progress: number = 0;
-  private rateLimiter = new RateLimiter({
+  /* private rateLimiter = new RateLimiter({
     tokensPerInterval: 100,
     interval: 600000,
-  });
+  }); */
   constructor(private http: HttpClient) {}
 
   async fetchJson(uri: RequestInfo | URL) {
@@ -347,7 +347,7 @@ export class ProcessorService {
       if (!cachedIds.includes(raidId)) {
         const url = `https://www.reddit.com/r/kickopenthedoor/comments/${raidId}`;
         const jsonUrl = `${url}.json?raw_json=1`;
-        const tokensRemaining = await this.rateLimiter.removeTokens(1);
+       // const tokensRemaining = await this.rateLimiter.removeTokens(1);
         const raidData = await this.fetchJson(jsonUrl);
 
         await this.processRaid(raidData, raidId);
