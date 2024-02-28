@@ -6,6 +6,8 @@ import { ProcessorComponent } from './processor/processor.component';
 import { AllianceComponent } from './settings/alliance/alliance.component';
 import { AllianceResolver } from './settings/alliance/alliance.resolver';
 import { enableDebugTools } from '@angular/platform-browser';
+import { PlayerComponent } from './player/player.component';
+import { PlayerTableComponent } from './player/player-table/player-table.component';
 
 const routes: Routes = [
   {
@@ -24,6 +26,10 @@ const routes: Routes = [
         outlet: 'allianceOutlet'
       }
     ]
+  },
+  {
+    path: 'player',
+    component: PlayerTableComponent
   },
   {
     path: 'processor',

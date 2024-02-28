@@ -2,22 +2,53 @@
   <h1 class="mat-h1">Dashboard</h1>
   <mat-card class="dashboard-card">
     <mat-card-header>
-      <mat-card-title>
-        Database
-      </mat-card-title>
+      <mat-card-title> Database </mat-card-title>
     </mat-card-header>
     <mat-card-content class="dashboard-card-content">
       <ng-container *ngIf="isLoading; else loadedRaids">
         <mat-spinner></mat-spinner>
       </ng-container>
       <ng-template #loadedRaids>
-        
+        <ngx-charts-number-card
+          [view]="view"
+          [scheme]="colorScheme"
+          [results]="chartData"
+          [cardColor]="cardColor"
+          (select)="onSelect($event)"
+        >
+        </ngx-charts-number-card>
+        <div class="line-chart-container">
+          <ngx-charts-line-chart
+            [view]="lineChartView"
+            [scheme]="lineScheme"
+            [schemeType]="schemeType"
+            [xScaleMin]="xScaleMin"
+            [showGridLines]="showGridLines"
+            [legend]="legend"
+            [legendPosition]="legendPosition"
+            [legendTitle]="legendTitle"
+            [showXAxisLabel]="showXAxisLabel"
+            [showYAxisLabel]="showYAxisLabel"
+            [xAxis]="xAxis"
+            [yAxis]="yAxis"
+            [xAxisLabel]="xAxisLabel"
+            [yAxisLabel]="yAxisLabel"
+            [timeline]="timeline"
+            [results]="lineChartData"
+            [roundDomains]="roundDomains"
+            (select)="onSelect($event)"
+            (activate)="onActivate($event)"
+            (deactivate)="onDeactivate($event)"
+          >
+          </ngx-charts-line-chart>
+        </div>
       </ng-template>
+      <div class="spacer"></div>
+      <mat-divider></mat-divider>
     </mat-card-content>
     <mat-card-actions>
       <button mat-button appNavigate="/processor">Processor</button>
-      <button mat-button appNavigate="/players">Players</button>
+      <button mat-button appNavigate="/player">Players</button>
     </mat-card-actions>
   </mat-card>
- 
 </div>

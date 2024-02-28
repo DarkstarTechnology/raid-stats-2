@@ -6,149 +6,301 @@ import { DashboardService } from './dashboard.service';
 import { Raid } from '../processor/db';
 import { NavigationEnd, Router } from '@angular/router';
 import { Subject, Subscription } from 'rxjs';
-
-interface IDailyStats {
-  day: string;
-  totalRaids: number;
-}
-
-enum ContentType {
-  TEXT,
-  ACTION
-}
+import { LegendPosition, ScaleType } from '@swimlane/ngx-charts';
 
 @Component({
-  selector: 'app-dashboard',
-  templateUrl: './dashboard.component.html',
-  styleUrls: ['./dashboard.component.scss'],
+    selector: 'app-dashboard',
+    templateUrl: './dashboard.component.html',
+    styleUrls: ['./dashboard.component.scss'],
 })
 export class DashboardComponent implements OnInit, OnDestroy {
-  private unsubscribe$ = new Subject<void>();
-  raids: Raid[] = [];
-  oldestRaid: string;
-  totalRaids: number;
-  avgRaidsPerDay: number;
-  highestRaidsInDay: IDailyStats;
-  contentType = ContentType;
-  cards: any; // Update with the correct type
-  isLoading = true;
+    private unsubscribe$ = new Subject<void>();
+    raids: Raid[] = [];
+    oldestRaid: string;
 
-  constructor(
-    private dashboardService: DashboardService,
-    private router: Router,
-    private breakpointObserver: BreakpointObserver
-  ) {}
+    totalRaids: number;
+    totalPlayers: number;
+    avgRaidsPerDay: number;
+    highestRaidsInDay: string;
+    cards: any; // Update with the correct type
+    isLoading = true;
+    chartData: any[];
+    view: [number, number] = [350, 350];
+    // options
+    lineChartData: any[];
+    legend: boolean = true;
+    legendPosition: LegendPosition = LegendPosition.Below;
+    legendTitle: any = 'Alliances';
+    showLabels: boolean = true;
+    animations: boolean = true;
+    xAxis: boolean = true;
+    yAxis: boolean = true;
+    showYAxisLabel: boolean = false;
+    showXAxisLabel: boolean = false;
+    showGridLines = false;
+    yScaleMin: number = 5;
+    schemeType: ScaleType = ScaleType.Ordinal;
+    xAxisTickCount: number = 5;
+    xAxisLabel: string = 'Day';
+    yAxisLabel: string = 'Raids';
+    timeline: boolean = false;
+    lineChartView: [number, number] = [700, 300];
+    colorScheme = 'aqua';
+    lineScheme = 'vivid';
+    roundDomains = true;
+    /* colorScheme = {
+    domain: ['#5AA454', '#E44D25', '#CFC0BB', '#7aa3e5', '#a8385d', '#aae3f5']
+  }; */
+    cardColor: string = '#20262d';
+    xScaleMin: any;
 
-  ngOnInit() {
-    this.loadRaids();
+    constructor(
+        private dashboardService: DashboardService,
+        private router: Router,
+        private processor: ProcessorService
+    ) {}
 
-    this.router.events.pipe(
-      filter(event => event instanceof NavigationEnd),
-      takeUntil(this.unsubscribe$)
-    ).subscribe(() => {
-      this.loadRaids();
-    });
-  }
- 
-  ngOnDestroy() {
-    this.unsubscribe$.next();
-    this.unsubscribe$.complete();
-  }
+    async ngOnInit() {
+        await this.processor.loadRaidResults(50);
+        this.loadData();
 
-  loadRaids() {
-    this.dashboardService.getRaids().pipe(takeUntil(this.unsubscribe$)).subscribe((raids) => {
-      this.raids = raids;
-      this.isLoading = false;
-      this.totalRaids = raids.length;
-      if (this.totalRaids > 0) {
-        this.oldestRaid = this.formatDateFromUnixTimestamp(
-          this.raids.reduce((p, c) => {
-            return p.date < c.date ? p : c;
-          }).date
-        );
-        this.highestRaidsInDay = this.getDailyStats(this.raids);
-        
-      }
-    });
-   
-  }
+        this.router.events
+            .pipe(
+                filter((event) => event instanceof NavigationEnd),
+                takeUntil(this.unsubscribe$)
+            )
+            .subscribe(() => {
+                this.loadData();
+            });
+    }
 
-  getDailyStats(raids: Raid[]): IDailyStats {
-    const dailyStats = Object.entries(this.groupRaidsByDay(this.raids)).reduce((acc, [key, value]) => {
-      return (value.length > acc.value.length) ? { key, value } : acc;
-  }, { key: '', value: [] });
+    ngOnDestroy() {
+        this.unsubscribe$.next();
+        this.unsubscribe$.complete();
+    }
 
-    return {day: dailyStats.key, totalRaids: dailyStats.value.length};
-  }
+    loadData() {
+        this.dashboardService
+            .getPlayers()
+            .pipe(takeUntil(this.unsubscribe$))
+            .subscribe((players) => {
+                this.totalPlayers = players.length;
+            });
 
-  formatDateFromUnixTimestamp(timestamp: number): string {
-    // Convert Unix timestamp to milliseconds
-    const unixTimestampMilliseconds = timestamp * 1000;
+        this.dashboardService
+            .getRaids()
+            .pipe(takeUntil(this.unsubscribe$))
+            .subscribe((raids) => {
+                this.raids = raids;
+                this.totalRaids = raids.length;
+                if (this.totalRaids > 0) {
+                    this.oldestRaid = this.formatDateFromUnixTimestamp(
+                        this.raids.reduce((p, c) => {
+                            return p.date < c.date ? p : c;
+                        }).date
+                    );
 
-    // Create a new Date object from the Unix timestamp
-    const date = new Date(unixTimestampMilliseconds);
+                    const dailyGroups = this.groupByDay(this.raids);
+                    this.avgRaidsPerDay =
+                        this.totalRaids / Object.keys(dailyGroups).length;
 
-    // Format the date string
-    const formattedDateString = date.toLocaleString('en-US', {
-      timeZone: 'UTC', // Assuming Unix timestamp is in UTC timezone
-      month: 'long',
-      day: 'numeric',
-      year: 'numeric',
-    });
+                    this.calculateChartData();
+                    this.calculateAllianceSeries();
+                    this.isLoading = false;
+                }
+            });
+    }
 
-    return formattedDateString;
-  }
+    onSelect(event) {
+        console.log(event);
+    }
+    onActivate(data): void {
+        console.log('Activate', JSON.parse(JSON.stringify(data)));
+    }
 
-  groupRaidsByDay(objects: Raid[]): Record<string, Raid[]> {
-    return objects.reduce((acc, obj) => {
-      // Ensure the date is a Date object
-      const date = new Date(obj.date);
-      // Create a date string key in the format YYYY-MM-DD to represent the day
-      const dateKey = date.toISOString().split('T')[0];
-  
-      // If the key doesn't exist, initialize it with an empty array
-      if (!acc[dateKey]) {
-        acc[dateKey] = [];
-      }
-  
-      // Add the current object to the array for the calculated date key
-      acc[dateKey].push(obj);
-  
-      return acc;
-    }, {} as Record<string, Raid[]>);
-  }
-  
+    onDeactivate(data): void {
+        console.log('Deactivate', JSON.parse(JSON.stringify(data)));
+    }
 
-  /* cards = this.breakpointObserver.observe(Breakpoints.Handset).pipe(
-    map(({ matches }) => {
+    calculateAllianceSeries() {
+        this.dashboardService
+            .getCurrentAlliance()
+            .pipe(takeUntil(this.unsubscribe$))
+            .subscribe((alliance) => {
+                try {
+                    const [prim, sec, tert]: Raid[][] = [[], [], []];
+                    this.xScaleMin = new Date(this.roundUnixTimestampToDay(alliance.firstRaid));
+                    for (const raid of this.raids) {
+                        if (alliance.primary.includes(raid.race)) {
+                            prim.push(raid);
+                        } else if (alliance.secondary.includes(raid.race)) {
+                            sec.push(raid);
+                        } else if (alliance.tertiary.includes(raid.race)) {
+                            tert.push(raid);
+                        } else {
+                            //donothing
+                        }
+                    }
+                    const primRec: Record<string, number> = Object.entries(
+                        this.groupByDay(prim)
+                    ).reduce((acc, [key, value]) => {
+                        acc[key] = value.length;
+                        return acc;
+                    }, {} as Record<string, number>);
+                    const primSeries = Object.entries(primRec).map(
+                        ([date, raids]) => {
+                            return {
+                                name: new Date(date),
+                                value: raids,
+                            };
+                        }
+                    );
+                    const secRec: Record<string, number> = Object.entries(
+                        this.groupByDay(sec)
+                    ).reduce((acc, [key, value]) => {
+                        acc[key] = value.length;
+                        return acc;
+                    }, {} as Record<string, number>);
+                    const secSeries = Object.entries(secRec).map(
+                        ([date, raids]) => {
+                            return {
+                                name: new Date(date),
+                                value: raids,
+                            };
+                        }
+                    );
+                    const tertRec: Record<string, number> = Object.entries(
+                        this.groupByDay(tert)
+                    ).reduce((acc, [key, value]) => {
+                        acc[key] = value.length;
+                        return acc;
+                    }, {} as Record<string, number>);
+                    const tertSeries = Object.entries(tertRec).map(
+                        ([date, raids]) => {
+                            return {
+                                name: new Date(date),
+                                value: raids,
+                            };
+                        }
+                    );
 
-      const dbInfo: ContentLine[] = (this.totalRaids > 0) ?  [{header: 'Total Raids', value: this.totalRaids.toString()}, {header: 'Avg Raids/Day', value: ''}, {header: 'Highest Raid Count', value: `${this.highestRaidsInDay.day} - ${this.highestRaidsInDay.totalRaids} Raids`}]  :
-      [{ header: 'No Raids in DB!', value: 'Run the processor to populate database.'}];
+                    this.lineChartData = [
+                        {
+                            name: alliance.primary.join('/'),
+                            series: primSeries,
+                        },
+                        {
+                            name: alliance.secondary.join('/'),
+                            series: secSeries,
+                        },
+                        {
+                            name: alliance.tertiary.join('/'),
+                            series: tertSeries,
+                        },
+                    ];
+                } catch (error) {
+                    console.error('Error creating series data:', error);
+                    return undefined;
+                }
+            });
+    }
 
-      return [
-        { title: 'Database', contents: { type: ContentType.TEXT, content: { lines: dbInfo } }, cols: matches ? 3 : 2, rows: 1 },
-        { title: 'Process Raids', contents: { type: this.contentType.ACTION, content: {route:'/processor'}}, cols: 1, rows: 1 },
-        { title: 'Player Stats', contents: {type: this.contentType.ACTION, content: {route:'/players'}}, cols: 1, rows: 1 }
-       
-      ];
-    })
-  ); */
-}
-export interface CardData {
-  title: string;
-  contents: CardContents;
-  cols: number;
-  rows: number;
-}
-interface CardContents {
-  type: ContentType;
-  content: ContentsData;
-}
-interface ContentsData {
-  lines?: ContentLine[];
-  route?: string;
-}
-interface ContentLine {
-  header: string;
-  value: string;
+    calculateChartData() {
+        this.chartData = [
+            {
+                name: 'Total Raids',
+                value: this.totalRaids,
+            },
+            {
+                name: 'Oldest Raid',
+                value: this.oldestRaid ?? 'N/A',
+            },
+            {
+                name: 'Daily Avg',
+                value: this.avgRaidsPerDay.toFixed(2) ?? 'N/A',
+            },
+            {
+                name: 'Total Players',
+                value: this.totalPlayers,
+            },
+        ];
+    }
+
+    groupByDay(objects: Raid[]): Record<string, Raid[]> {
+        return objects.reduce((acc, obj) => {
+            // Convert Unix timestamp to Date object
+            const date = new Date(obj.date * 1000); // Convert to milliseconds
+            // Format date as a string 'YYYY-MM-DD'
+            const dateKey = date.toISOString().split('T')[0];
+
+            // Group by this formatted date string
+            if (!acc[dateKey]) {
+                acc[dateKey] = [];
+            }
+            acc[dateKey].push(obj);
+
+            return acc;
+        }, {} as Record<string, Raid[]>);
+    }
+
+    formatDateFromUnixTimestamp(timestamp: number): string {
+        // Convert Unix timestamp to milliseconds
+        const unixTimestampMilliseconds = timestamp * 1000;
+        // Create a new Date object from the Unix timestamp
+        const date = new Date(unixTimestampMilliseconds);
+        const monthNames = [
+            'Jan',
+            'Feb',
+            'Mar',
+            'Apr',
+            'May',
+            'Jun',
+            'Jul',
+            'Aug',
+            'Sep',
+            'Oct',
+            'Nov',
+            'Dec',
+        ];
+        const day = date.getDate();
+        const monthIndex = date.getMonth();
+        const monthName = monthNames[monthIndex];
+        return `${day}.${monthName}`;
+    }
+
+    groupRaidsByDay(objects: Raid[]): Record<string, Raid[]> {
+        return objects.reduce((acc, obj) => {
+            // Ensure the date is a Date object
+            const date = new Date(obj.date);
+            // Create a date string key in the format YYYY-MM-DD to represent the day
+            const dateKey = date.toISOString().split('T')[0];
+
+            // If the key doesn't exist, initialize it with an empty array
+            if (!acc[dateKey]) {
+                acc[dateKey] = [];
+            }
+
+            // Add the current object to the array for the calculated date key
+            acc[dateKey].push(obj);
+
+            return acc;
+        }, {} as Record<string, Raid[]>);
+    }
+
+    roundUnixTimestampToDay(timestamp: number): number {
+        // Convert Unix timestamp to milliseconds
+        let date = new Date(timestamp * 1000);
+
+        // Check if time is greater than or equal to 12:00:00 AM
+        if (date.getHours() > 0 || date.getMinutes() > 0 || date.getSeconds() > 0) {
+            // Increment date by one day
+            date.setDate(date.getDate() + 1);
+        }
+
+        // Set time to 12:00:00 AM
+        date.setHours(0, 0, 0, 0);
+
+        // Convert date back to Unix timestamp and return
+        return Math.round(date.getTime());
+    }
 }

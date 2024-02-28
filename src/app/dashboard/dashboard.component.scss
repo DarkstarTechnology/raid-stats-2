@@ -1,14 +1,32 @@
-.grid-container {
-  margin: 20px;
+@media (max-width: 700px) {
+  .mat-mdc-card-content {
+    padding: 0 4px;
+  }
+
+  .grid-container {
+    margin: 2px;
+  }
+
+  .line-chart-container {
+    margin-top: 8px;
+    margin-bottom: 16px;
+    width: 360px;
+    overflow-x: auto;
+  }
+}
+@media (min-width: 700px) {
+  .grid-container {
+    margin: 20px;
+  }
+
+  .line-chart-container {
+    margin-top: 20px;
+    margin-bottom: 32px;
+
+  }
 }
 
-.dashboard-card {
-  position: absolute;
-  top: 15px;
-  left: 15px;
-  right: 15px;
-  bottom: 15px;
-}
+
 
 .more-button {
   position: absolute;
@@ -18,4 +36,17 @@
 
 .dashboard-card-content {
   text-align: center;
+}
+
+.chart-legend {
+    margin-bottom: 16px;
+    margin-left: 8px;
+}
+
+.legend-title {
+    text-align: left;
+}
+
+.spacer {
+    margin-bottom: 72px;
 }

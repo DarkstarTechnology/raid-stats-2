@@ -38,7 +38,7 @@
   /**
    * Controls whether the editor should render the inline color decorators and color picker.
    */
-  // "editor.colorDecorators": true,
+   "editor.colorDecorators": true,
   /**
    * Enables the custom context menu.
    * Defaults to true.
@@ -286,7 +286,7 @@
    * The number of spaces a tab is equal to. This setting is overridden based
    * on the file contents when 'editor.detectIndentation' is on.
    */
-  // "editor.tabSize": 2,
+     "editor.tabSize": 4
   /**
    * Inserting and deleting whitespace follows tab stops.
    * Defaults to true.

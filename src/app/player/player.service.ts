@@ -23,20 +23,18 @@ export class PlayerService {
         .then((raids) => raids)
     ).pipe(
       concatMap((raids) => {
-        console.log('inside concatMap: ', raids);
         const pir = raids.filter((x) => x.isSnipe !== true);
         const snipes = raids.filter((x) => x.isSnipe === true).length;
-  
+
         let totalRaids = pir.length;
         let avgPosition = pir.reduce((acc, cur) => acc + cur.position, 0) / totalRaids;
         let avgTime = pir.reduce((acc, curr) => acc + curr.time, 0) / totalRaids;
-  
+
         // Fetch all raids asynchronously
         return from(
           db.raids
             .toArray()
             .then((allRaids) => {
-              console.log('inside second toArray: ', allRaids);
               return allRaids;
             })
             .catch((error) => {
@@ -46,7 +44,7 @@ export class PlayerService {
         ).pipe(
           map((allRaids) => {
             let raidParticipation = totalRaids / allRaids.length;
-  
+
             // Return the player stats object
             return {
               player: player,

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Raid, db } from '../processor/db';
+import { IAlliance, Player, Race, Raid, db } from '../processor/db';
 import { EMPTY, Observable, catchError, defer, forkJoin, groupBy, map, mergeMap, of, reduce, toArray } from 'rxjs';
 import * as moment from 'moment';
 
@@ -18,7 +18,7 @@ export interface GroupedStats {
 })
 export class DashboardService {
   raidsByDay: any;
-  
+
   constructor() { }
 
   getRaids(): Observable<Raid[]> {
@@ -27,79 +27,120 @@ export class DashboardService {
       return await db.raids.toArray();
     });
   }
-  
-  /* getGroupedStats(): Observable<GroupedStats[]> {
-    return of(null).pipe(
-      catchError(() => {
-        console.error('Error fetching raid data');
-        return EMPTY; // Return empty observable in case of error
-      }),
-      map(defer(async () => {
-        try {
-          const raids = await db.raids.toArray(); // Synchronously retrieve raids
-          const dailyStats = this.groupRaidsByDate(raids, 'day');
-          const monthlyStats = this.groupRaidsByDate(raids, 'month');
-    
-          return [...dailyStats, ...monthlyStats]; // Combine daily and monthly stats arrays
-        } catch (error) {
-          console.error('Error processing raid data:', error);
-          return []; // Return empty array in case of error
-        }
-      }))
-    );
-  }
-  
-  private groupRaidsByDate(raids: Raid[], unit: 'day' | 'month'): GroupedStats[] {
-    const groupedStats: { [key: string]: GroupedStats } = {};
-  
-    raids.forEach((raid: Raid) => {
-      const date = moment.utc(raid.date * 1000).startOf(unit).format(unit === 'day' ? 'YYYY-MM-DD' : 'YYYY-MM');
-      if (!groupedStats[date]) {
-        groupedStats[date] = { group: date, raids: [] };
-      }
-      groupedStats[date].raids.push(raid);
+
+  getPlayers(): Observable<Player[]> {
+    return defer(async () => {
+      return await db.players.toArray();
     });
-  
-    return Object.values(groupedStats);
+  }
+
+  getCurrentAlliance(): Observable<IAlliance> {
+    return defer(async () => {
+        try {
+            const latestAlliance = await db.alliances
+              .orderBy('firstRaid')
+              .reverse()
+              .first();
+            return latestAlliance;
+          } catch (error) {
+            console.error('Error fetching latest alliance:', error);
+            return undefined;
+          }
+    });
+  }
+
+  /* getAllianceSeries() {
+    return defer(async () => {
+        try {
+            let seriesData: IAllianceSeriesData[];
+            const alliance = await this.getAllianceAsync();
+
+                const [prim, sec, tert]: Raid[][] = [[],[],[]];
+
+            for(const raid of await db.raids.toArray()) {
+                if(alliance.primary.includes(raid.race)) {
+                    prim.push(raid);
+                }
+                else if (alliance.secondary.includes(raid.race)) {
+                    sec.push(raid);
+                }
+                else if (alliance.tertiary.includes(raid.race)) {
+                    tert.push(raid);
+                }
+                else {
+                    //donothing
+                }
+
+            }
+            const primSeries: Record<string, number> = Object.entries(this.groupByDay(prim)).reduce(
+                (acc, [key, value]) => {
+                  acc[key] = value.length;
+                  return acc;
+                },
+                {} as Record<string, number>
+              );
+            const secSeries: Record<string, number> = Object.entries(this.groupByDay(prim)).reduce(
+                (acc, [key, value]) => {
+                  acc[key] = value.length;
+                  return acc;
+                },
+                {} as Record<string, number>
+              );
+            const tertSeries: Record<string, number> = Object.entries(this.groupByDay(prim)).reduce(
+                (acc, [key, value]) => {
+                  acc[key] = value.length;
+                  return acc;
+                },
+                {} as Record<string, number>
+              );
+
+            return [
+                {
+                    name: alliance.primary.join('/'),
+                    series: primSeries,
+                },
+                {
+                    name: alliance.secondary.join('/'),
+                    series: secSeries,
+                },
+                {
+                    name: alliance.tertiary.join('/'),
+                    series: tertSeries,
+                },
+            ];
+        }
+        catch(error) {
+            console.error('Error creating series data:', error);
+            return undefined;
+        }
+    })
   }
  */
-  /* async getGroupStats(){
-    const raids = await db.raids.toArray();
-  
-    const m$ = of(...raids).pipe(
-      groupBy((r: Raid) => {
-        const date = new Date(r.date * 1000); // Convert Unix timestamp to milliseconds
-        return moment.utc(date).startOf('month').valueOf(); // Group by month
-      }),
-      mergeMap(group$ => group$.pipe(reduce((acc, cur) => [...acc, cur], []))),
-      map(arr => ({ group: moment(arr[0].date * 1000).format('YYYY-MM'), raids: arr })),
-      toArray()
-    );
+  groupByDay(objects: Raid[]): Record<string, Raid[]> {
+    return objects.reduce((acc, obj) => {
+      // Convert Unix timestamp to Date object
+      const date = new Date(obj.date * 1000); // Convert to milliseconds
+      // Format date as a string 'YYYY-MM-DD'
+      const dateKey = date.toISOString().split('T')[0];
 
-    const d$ = of(...raids).pipe(
-      groupBy((r: Raid) => {
-        const date = new Date(r.date * 1000); // Convert Unix timestamp to milliseconds
-        return moment.utc(date).startOf('day').valueOf(); // Group by day
-      }),
-      mergeMap(group$ => group$.pipe(reduce((acc, cur) => [...acc, cur], []))),
-      map(arr => ({ group: moment(arr[0].date * 1000).format('YYYY-MM-DD'), raids: arr })),
-      toArray()
-    );
+      // Group by this formatted date string
+      if (!acc[dateKey]) {
+        acc[dateKey] = [];
+      }
+      acc[dateKey].push(obj);
 
-    return { daily$: d$, monthly$: m$}
-  } */
-
-  async getDailyStats() {
-    const raids = await db.raids.toArray();
-   
-    return of(...raids).pipe(
-      groupBy((r: Raid) => {
-        const date = new Date(r.date * 1000); // Convert Unix timestamp to milliseconds
-        return moment.utc(date).startOf('day').valueOf(); // Group by day
-      }),
-      mergeMap(group$ => group$.pipe(reduce((acc, cur) => [...acc, cur], []))),
-      map(arr => ({ date: moment(arr[0].date * 1000).format('YYYY-MM-DD'), raids: arr })),
-      toArray()
-    );
+      return acc;
+    }, {} as Record<string, Raid[]>);
   }
 }
+
+interface IAllianceSeriesData {
+    name: string;
+    series: IDailyStats[];
+  }
+
+  interface IDailyStats {
+    name: string; // Day
+    value: number; // Total Kills
+  }
+

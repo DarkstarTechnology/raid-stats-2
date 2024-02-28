@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { IAlliance, Player, Race, Raid, db } from './db';
 
 import { HttpClient } from '@angular/common/http';
-import { RateLimiter } from 'limiter';
+//import { RateLimiter } from 'limiter';
 
 const attackMatch = /!(melee|mage|magic|range)/i;
 
@@ -11,10 +11,10 @@ const attackMatch = /!(melee|mage|magic|range)/i;
 })
 export class ProcessorService {
   progress: number = 0;
-  private rateLimiter = new RateLimiter({
+  /* private rateLimiter = new RateLimiter({
     tokensPerInterval: 100,
     interval: 600000,
-  });
+  }); */
   constructor(private http: HttpClient) {}
 
   async fetchJson(uri: RequestInfo | URL) {
@@ -121,7 +121,7 @@ export class ProcessorService {
       return;
     }
 
-    const killingAttackTime = killingAttack.created;
+    const killingAttackTime = killingAttack.created_utc;
 
     const minRaidStartTime = killingAttackTime - 3 * raidStartTimeout;
 
@@ -130,7 +130,11 @@ export class ProcessorService {
     let raidStart = minRaidStartTime;
     raidDate = minRaidStartTime;
     let lastAttack = maxRaidEndTime;
-    const alliance: IAlliance = await db.alliances.where('firstRaid').belowOrEqual(raidDate).and(a => a.lastRaid ? a.lastRaid >= raidDate : true).last();
+    const alliance: IAlliance = await db.alliances
+      .where('firstRaid')
+      .belowOrEqual(raidDate)
+      .and((a) => (a.lastRaid ? a.lastRaid >= raidDate : true))
+      .last();
     const raidAttacks = attacks
       .filter(
         (x) =>
@@ -309,51 +313,22 @@ export class ProcessorService {
     return bossIds;
   }
 
-  /* process$ = async function runProcessor(limit: number): Promise<Observable<any>> {
-    const ids = await this.fetchBossIds(limit);
-    return new Observable(async (s) => {
-      console.log("Processing start...");
-    
-    console.log("Fetched " + ids.length);
-    let counter = 1;
-      s.next(ids.length);
-      for (const raidId of ids) {
-        const url = `https://www.reddit.com/r/kickopenthedoor/comments/${raidId}`;
-  
-      const jsonUrl = `${url}.json?raw_json=1`;
-      const raidData = await this.fetchJson(jsonUrl);
-  
-      this.processRaid(raidData, raidId);
-        s.next(counter);
-        counter++;
-      }
-      s.complete();
-  })
-} */
-
   async loadRaidResults(limit: number) {
-    //console.log("Processing start...");
-    const ids = await this.fetchBossIds(limit);
-    //console.log("Fetched " + ids.length);
+    const ids = await this.fetchBossIds(150);
     const total = ids.length;
     let counter = 1;
     const cached = await db.raids.where('redditId').anyOf(ids).toArray();
     const cachedIds = cached.map((x) => x.redditId);
-    //const ids = ['179w94b','179m74j','179be70'];
+
     for (const raidId of ids) {
-      /* if (params["id"] !== raidId) {
-        window.location.search = `id=${raidId}`;
-      } */
       if (!cachedIds.includes(raidId)) {
         const url = `https://www.reddit.com/r/kickopenthedoor/comments/${raidId}`;
         const jsonUrl = `${url}.json?raw_json=1`;
-        const tokensRemaining = await this.rateLimiter.removeTokens(1);
+        //const tokensRemaining = await this.rateLimiter.removeTokens(1);
         const raidData = await this.fetchJson(jsonUrl);
-
         await this.processRaid(raidData, raidId);
       }
       this.progress = (counter / total) * 100;
-      //console.log("Setting progress: " + this.progress);
       counter++;
     }
   }
@@ -368,7 +343,7 @@ export class ProcessorService {
 
   async printRaids() {
     let dbraids = await db.transaction(
-      'rw',
+      'r',
       [db.raids, db.players, db.playersInRaid],
       async () => {
         let raids: Raid[] = await db.raids.toArray();

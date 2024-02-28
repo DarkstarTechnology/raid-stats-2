@@ -32,6 +32,11 @@ export class MainComponent {
       route: '/processor',
     },
     {
+      title: 'Players',
+      icon: 'people',
+      route: '/player'
+    },
+    {
       title: 'Settings',
       icon: 'settings',
       route: '/settings',

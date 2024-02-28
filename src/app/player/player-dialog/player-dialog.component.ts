@@ -3,7 +3,7 @@ import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { IPlayerStats } from 'src/app/interfaces/player-stats';
 import { PlayerService } from '../player.service';
 import { Observable } from 'rxjs';
-import { Player } from 'src/app/processor/db';
+import { Player, Race } from 'src/app/processor/db';
 
 @Component({
   selector: 'app-player-dialog',
@@ -13,10 +13,10 @@ import { Player } from 'src/app/processor/db';
 export class PlayerDialogComponent implements OnInit {
   loading = true; // Flag to indicate loading status
   playerStats$: Observable<IPlayerStats>; // Observable to hold the fetched data
-
-  constructor(@Inject(MAT_DIALOG_DATA) public player: Player, private playerService: PlayerService){}
+public race = Race;
+  constructor(@Inject(MAT_DIALOG_DATA) public playerStats: IPlayerStats){}
 
 ngOnInit() {
-  this.playerStats$ = this.playerService.getPlayerStats(this.player);
+
 }
 }

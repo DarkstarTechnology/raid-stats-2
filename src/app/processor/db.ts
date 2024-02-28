@@ -1,15 +1,14 @@
 import Dexie, { Table } from 'dexie';
 
-
-
 export enum Race {
-  PLANT = 'Plant',
-  GNOME = 'Gnome',
-  DRAGON = 'Dragon',
-  DEMON = 'Demon',
-  KOBOLD = 'Kobold',
-  UNDEAD = 'Undead',
-  NONE = 'None'
+  Plant = 'Plant',
+  Gnome = 'Gnome',
+  Dragon = 'Dragon',
+  Demon = 'Demon',
+  Kobold = 'Kobold',
+  Undead = 'Undead',
+  Troll = 'Troll',
+  None = 'None',
 }
 
 export interface IAlliance {
@@ -23,213 +22,242 @@ export interface IAlliance {
 }
 
 export interface IPlayer {
-  
-  name: string
-  race: string
-  
+  name: string;
+  race: string;
 }
+
 export interface IRaid {
-    
-    redditId: string;
-    title: string;
-    date: number;
-    kill: Player;
-    time: number;
-    race: string;
-    players: Player[];
+  redditId: string;
+  title: string;
+  date: number;
+  kill: Player;
+  time: number;
+  race: string;
+  players: Player[];
 }
 
 export interface IPlayersInRaid {
-    
-    name: string;
-    redditId: string;
-    time: number;
-    position: number;
-    isSnipe: boolean;
+  name: string;
+  redditId: string;
+  time: number;
+  position: number;
+  isSnipe: boolean;
 }
 
-export interface RaceCount {
+export interface IRaceCount {
   race: Race;
   count: number;
 }
 
-
-
 export class Raid implements IRaid {
-    
-    redditId: string;
-    date: number;
-    title: string;
-    kill: Player;
-    time: number;
-    race: string;
-    players: Player[];
+  redditId: string;
+  date: number;
+  title: string;
+  kill: Player;
+  time: number;
+  race: string;
+  players: Player[];
 
-    constructor(redditId: string, date: number, killer: Player, raceKill: string, raidTime: number, title?: string) {
-        this.redditId = redditId;
-        this.date = date;
-        this.kill = killer;
-        this.time = raidTime;
-        this.race = raceKill;
-        if (title) this.title = title;
-        
-        //this.players = [];
-        Object.defineProperties(this, {
-            players: {value: [], enumerable: true, writable: true }
-        });
-    }
+  constructor(
+    redditId: string,
+    date: number,
+    killer: Player,
+    raceKill: string,
+    raidTime: number,
+    title?: string
+  ) {
+    this.redditId = redditId;
+    this.date = date;
+    this.kill = killer;
+    this.time = raidTime;
+    this.race = raceKill;
+    if (title) this.title = title;
 
-    async addRaid() {
-      await db.raids.put(this);
-    }
+    Object.defineProperties(this, {
+      players: { value: [], enumerable: true, writable: true },
+    });
+  }
 
-    async addPlayer(player: Player, t: number, p: number, c: boolean) {
-      
-        await db.players.put(player);
-        
-       
-      await db.playersInRaid.put({name: player.name, redditId: this.redditId, time: t, position: p, isSnipe: c});
-      this.players.push(player);
-    }
+  async addRaid() {
+    await db.raids.put(this);
+  }
 
-    async loadPlayers() {
-        const playerLinks = await db.playersInRaid.where('redditId').equals(this.redditId).toArray();
-        const players = await db.players.where('name').anyOf(playerLinks.map(l => l.name)).toArray();
-        for (const player of players) {
-         
-          if (!(this.players.find(p => p.name === player.name))) {
-          
-            this.players.push(player);
-          }
-        }
-        await this.save();
-        return players;
-    }
+  async addPlayer(player: Player, t: number, p: number, c: boolean) {
+    await db.players.put(player);
 
-    async getAllRaceCounts() {
-      const raceCounts: RaceCount[] = [];
-      const links = await db.playersInRaid.where('redditId').equals(this.redditId).toArray();
-      const players = await db.players.where('name').anyOf(links.map(l => l.name)).toArray();
-      for(const r of [Race.DEMON, Race.DRAGON, Race.GNOME, Race.KOBOLD, Race.PLANT, Race.UNDEAD]) {
-        const n = players.filter(player => player.race === r).length;
-        raceCounts.push({race: r, count: n});
+    await db.playersInRaid.put({
+      name: player.name,
+      redditId: this.redditId,
+      time: t,
+      position: p,
+      isSnipe: c,
+    });
+    this.players.push(player);
+  }
+
+  async loadPlayers() {
+    const playerLinks = await db.playersInRaid
+      .where('redditId')
+      .equals(this.redditId)
+      .toArray();
+    const players = await db.players
+      .where('name')
+      .anyOf(playerLinks.map((l) => l.name))
+      .toArray();
+    for (const player of players) {
+      if (!this.players.find((p) => p.name === player.name)) {
+        this.players.push(player);
       }
-      return raceCounts;
     }
+    await this.save();
+    return players;
+  }
 
-    async getRaceCount(race:string) {
-        return this.players.filter(player => player.race === race).length;
+  async getAllRaceCounts() {
+    const raceCounts: IRaceCount[] = [];
+    const links = await db.playersInRaid
+      .where('redditId')
+      .equals(this.redditId)
+      .toArray();
+    const players = await db.players
+      .where('name')
+      .anyOf(links.map((l) => l.name))
+      .toArray();
+    for (const r of [
+      Race.Demon,
+      Race.Dragon,
+      Race.Gnome,
+      Race.Kobold,
+      Race.Plant,
+      Race.Undead,
+    ]) {
+      const n = players.filter((player) => player.race === r).length;
+      raceCounts.push({ race: r, count: n });
     }
+    return raceCounts;
+  }
 
-    async save() {
-        await db.raids.put(this);
-        console.log(this);
-    }
+  async getRaceCount(race: string) {
+    return this.players.filter((player) => player.race === race).length;
+  }
+
+  async save() {
+    await db.raids.put(this);
+    console.log(this);
+  }
 }
 
 export class Player implements IPlayer {
-    
-    name: string;
-    race: string;
-    raids!: IRaid[];
-    avg!: number;
+  name: string;
+  race: string;
+  raids!: IRaid[];
+  avg!: number;
 
+  constructor(name: string, race: string, id?: number) {
+    this.name = name;
+    this.race = race;
 
+    Object.defineProperties(this, {
+      raids: { value: [], enumerable: false, writable: true },
+    });
+  }
 
-    constructor(name: string, race: string, id?: number) {
-        this.name = name;
-        this.race = race;
-        
-
-        Object.defineProperties(this, {
-            raids: {value: [], enumerable: false, writable: true }
-        });
-    }
-
-    async getAvg() {
-     const links = await db.playersInRaid.where('name').equals(this.name).toArray();
-     const n = links.length;
-     const total = links.reduce((t,l) => t + l.time, 0);
-     this.avg = total / n;
-     return total / n;
-    }
-    //async loadRaids() {
-     //   const raidLinks = await db.playersInRaid.where('name').equals(this.id).toArray();
-    //    return await Promise.all(raidLinks.map(link => db.raids.get(link.raidId)));
-   // }
+  async getAvg() {
+    const links = await db.playersInRaid
+      .where('name')
+      .equals(this.name)
+      .toArray();
+    const n = links.length;
+    const total = links.reduce((t, l) => t + l.time, 0);
+    this.avg = total / n;
+    return total / n;
+  }
 }
 
-
 export class AppDB extends Dexie {
-    players: Table<Player, number>;
-    raids: Table<Raid, number>;
-    public alliances: Table<IAlliance, number>;
-    public playersInRaid!: Table<IPlayersInRaid, [number, number]>;
+  players: Table<Player, number>;
+  raids: Table<Raid, number>;
+  public alliances: Table<IAlliance, number>;
+  public playersInRaid!: Table<IPlayersInRaid, [number, number]>;
 
-    constructor() {
-        super('RaidDatabase');
-        var db = this;
-        db.version(4).stores({
-            players: 'name, race',
-            raids: 'redditId, date',
-            playersInRaid: '[name+redditId], name, redditId',
-            alliances: 'id++, firstRaid, lastRaid'
-        });
-       
-        this.players = db.table('players');
-        this.raids = db.table('raids');
-        this.playersInRaid = db.table('playersInRaid');
-        this.alliances = db.table('alliances');
-        this.players.mapToClass(Player);
-        this.raids.mapToClass(Raid);
+  constructor() {
+    super('RaidDatabase');
+    var db = this;
+    db.version(4).stores({
+      players: 'name, race',
+      raids: 'redditId, date',
+      playersInRaid: '[name+redditId], name, redditId',
+      alliances: 'id++, firstRaid, lastRaid',
+    });
 
-        db.alliances.add({primary:[Race.PLANT,Race.GNOME], secondary: [Race.DEMON, Race.DRAGON, Race.KOBOLD, Race.UNDEAD], tertiary: [Race.NONE], firstRaid: 1706828348, lastRaid: 1708362389});
-        
-        db.alliances.add({primary:[Race.DRAGON, Race.PLANT], secondary:[Race.DEMON,Race.GNOME], tertiary:[Race.UNDEAD,Race.KOBOLD], firstRaid: 1708362390});
-    }
-    
+    this.players = db.table('players');
+    this.raids = db.table('raids');
+    this.playersInRaid = db.table('playersInRaid');
+    this.alliances = db.table('alliances');
+    this.players.mapToClass(Player);
+    this.raids.mapToClass(Raid);
+  }
 }
 
 async function addAlliance(alliance: IAlliance) {
-  // Perform validation
   if (alliance.firstRaid && alliance.lastRaid) {
-      const overlappingAlliance = await db.alliances
-          .where('firstRaid').below(alliance.lastRaid)
-          .and(a => a.lastRaid < alliance.firstRaid)
-          .first();
-      if (overlappingAlliance) {
-          throw new Error('The timespan between firstRaid and lastRaid overlaps with an existing alliance.');
+    const overlappingAlliance = await db.alliances
+      .filter(
+        (a) =>
+          (a.firstRaid < alliance.lastRaid && a.lastRaid > alliance.firstRaid) ||
+          (a.firstRaid === alliance.firstRaid && a.lastRaid === alliance.lastRaid)
+      )
+      .first();
+    if (overlappingAlliance) {
+      throw new Error(
+        'The timespan between firstRaid and lastRaid overlaps with an existing alliance.'
+      );
+    }
+    else {
+        await db.alliances.add(alliance);
       }
   }
-  // If validation passes, add the alliance record to the table
-  await db.alliances.add(alliance);
-  console.log('Alliance added successfully.');
+  else if (await db.alliances.filter((a) => !(a.lastRaid)).count() > 0) {
+    throw new Error(
+        'Cannot add another alliance with no last raid date.'
+      );
+  }
+  else {
+    await db.alliances.add(alliance);
+  }
 }
 
 async function seedAllianceTable(db: AppDB) {
   const seedData: IAlliance[] = [
-    {primary:[Race.PLANT,Race.GNOME], secondary: [Race.DEMON, Race.DRAGON, Race.KOBOLD, Race.UNDEAD], tertiary: [Race.NONE], firstRaid: 1706828348, lastRaid: 1708362389},
-    {primary:[Race.DRAGON, Race.PLANT], secondary:[Race.DEMON,Race.GNOME], tertiary:[Race.UNDEAD,Race.KOBOLD], firstRaid: 1708362390}
+    {
+      primary: [Race.Plant, Race.Gnome],
+      secondary: [Race.Demon, Race.Dragon, Race.Kobold, Race.Undead],
+      tertiary: [Race.None],
+      firstRaid: 1706828348,
+      lastRaid: 1708362389,
+    },
+    {
+      primary: [Race.Dragon, Race.Plant],
+      secondary: [Race.Demon, Race.Gnome],
+      tertiary: [Race.Undead, Race.Kobold],
+      firstRaid: 1708362390,
+    },
   ];
   for (const a of seedData) {
     try {
       await addAlliance(a);
-    }
-    catch (error) {
+    } catch (error) {
       console.log('Alliance already exists in database.');
     }
   }
-
 }
 
 export const db = new AppDB();
 db.open().then(() => {
   console.log('Database initialized.');
-  seedAllianceTable(db).then(() => {
-    console.log('Alliance data seeded successfully.');
-  }).catch(error => console.error('Error initializing database:',error));
+  seedAllianceTable(db)
+    .then(() => {
+      console.log('Alliance data seeded successfully.');
+    })
+    .catch((error) => console.error('Error initializing database:', error));
 });
-
-async function putPlayer(player: Player) {
-    return await db.players.put(player);
-}

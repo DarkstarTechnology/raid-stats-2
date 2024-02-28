@@ -59,3 +59,19 @@ table {
 .player-row-is-clicked {
   font-weight: bold;
 }
+
+.table-options {
+  display: flex;
+  gap: 16px;
+  flex-direction: row;
+}
+
+.detail-toggle {
+  margin-left: 8px;
+}
+
+@media (min-width: 768px) {
+  .mat-column-name {
+    width: 25%;
+  }
+}

@@ -42,6 +42,9 @@ import { MatDialogModule} from '@angular/material/dialog';
 import { PlayerDialogComponent } from './player/player-dialog/player-dialog.component';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import { NavigationDirective } from './shared/navigation.directive';
+import { NgxChartsModule } from '@swimlane/ngx-charts';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatTableResponsiveModule } from './shared/mat-table-responsive/mat-table-responsive.module';
 
 @NgModule({
   declarations: [
@@ -55,6 +58,7 @@ import { NavigationDirective } from './shared/navigation.directive';
     PlayerTableComponent,
     PlayerDialogComponent,
     NavigationDirective
+
   ],
   imports: [
     BrowserModule,
@@ -86,7 +90,10 @@ import { NavigationDirective } from './shared/navigation.directive';
     MatSortModule,
     MatPaginatorModule,
     MatDialogModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    NgxChartsModule,
+    MatSlideToggleModule,
+    MatTableResponsiveModule
   ],
   providers: [
     {provide: MAT_MOMENT_DATE_ADAPTER_OPTIONS, useValue: {useUtc: true}},

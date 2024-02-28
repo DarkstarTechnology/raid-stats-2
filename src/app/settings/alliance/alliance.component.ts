@@ -29,13 +29,13 @@ export class AllianceComponent implements OnInit {
   matcher = new AllianceErrorStateMatcher();
 
   races: Race[] = [
-    Race.NONE,
-    Race.DEMON,
-    Race.DRAGON,
-    Race.GNOME,
-    Race.KOBOLD,
-    Race.PLANT,
-    Race.UNDEAD,
+    Race.None,
+    Race.Demon,
+    Race.Dragon,
+    Race.Gnome,
+    Race.Kobold,
+    Race.Plant,
+    Race.Undead,
   ];
 
   settingsForm = this.fb.group({
@@ -69,7 +69,7 @@ export class AllianceComponent implements OnInit {
   }
 
   async onSubmit(): Promise<void> {
-   
+
   }
 
   async onRadioChange(event: MatRadioChange) {
@@ -88,11 +88,11 @@ export class AllianceComponent implements OnInit {
       await db.alliances.where('id').notEqual(id).modify({isActive: false});
       this.reloadAlliances();
       this._snackBar.open('Alliance Saved', 'Dismiss', { duration: 2500 });
-    } 
+    }
     else {
       this._snackBar.open('Invalid Selection', 'Dismiss', {duration: 2000});
     }
-    
+
   }
 
   async deleteAlliance() {
