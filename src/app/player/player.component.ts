@@ -24,16 +24,7 @@ export class PlayerComponent implements OnInit {
 
   }
   async ngOnInit() {
-    /* console.log('ng On Init');
-    const pa: IPlayerStats[] = [];
-    const p = await db.players.toArray(); // Emit the promise that resolves to an array of players
-    console.log(p.length);
-    for (const x of p) {
-      console.log(x.name);
-      const y = await this.playerService.getPlayerStats(x);
-      pa.push(y);
-    }
-    this.playerDataSource = new PlayerDataSource(pa); */
+
   }
 }
 

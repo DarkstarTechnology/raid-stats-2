@@ -6,10 +6,227 @@
   border-radius: 50%; /* Makes it circular */
 }
 
-.player-card-image {
-  background-image: url('/home/projects/stackblitz-starters-gvtolb/src/assets/avatar.jpg');
-  background-size: cover;
-  width: 64px; /* Adjust as needed */
-  height: 64px; /* Adjust as needed */
-  border-radius: 50%; /* Makes it circular */
+img.player-avatar-image {
+    width: 40px;
+    height: 40px;
+    border-radius: 50% !important;
+    border-style: none;
+    border-width: 2px;
+    object-fit: cover;
+    overflow: hidden !important;
 }
+@media (min-width: 1200px) {
+    .container-xl, .container-lg, .container-md, .container-sm, .container {
+      max-width: 1140px;
+    }
+  }
+
+  .container, .container-fluid, .container-sm, .container-md, .container-lg, .container-xl, .container-xxl {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+
+  @media (min-width: 1200px) {
+    .py-xl-5 {
+      padding-top: 3rem !important;
+      padding-bottom: 3rem !important;
+    }
+  }
+
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  .container, .container-fluid, .container-xxl, .container-xl, .container-lg, .container-md, .container-sm {
+    --bs-gutter-x: 1.5rem;
+    --bs-gutter-y: 0;
+    width: 100%;
+    padding-right: calc(var(--bs-gutter-x) * .5);
+    padding-left: calc(var(--bs-gutter-x) * .5);
+    margin-right: auto;
+    margin-left: auto;
+  }
+
+  @media (min-width: 576px) {
+    .container-sm, .container {
+      max-width: 540px;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .container-md, .container-sm, .container {
+      max-width: 720px;
+    }
+  }
+
+  @media (min-width: 992px) {
+    .container-lg, .container-md, .container-sm, .container {
+      max-width: 960px;
+    }
+  }
+
+  @media (min-width: 1200px) {
+    .container-xl, .container-lg, .container-md, .container-sm, .container {
+      max-width: 1140px;
+    }
+  }
+
+  @media (min-width: 1400px) {
+    .container-xxl, .container-xl, .container-lg, .container-md, .container-sm, .container {
+      max-width: 1320px;
+    }
+  }
+
+  .py-4 {
+    padding-top: 1.5rem !important;
+    padding-bottom: 1.5rem !important;
+  }
+
+  @media (min-width: 1200px) {
+    .py-xl-5 {
+      padding-top: 3rem !important;
+      padding-bottom: 3rem !important;
+    }
+  }
+
+  .container, .container-fluid, .container-sm, .container-md, .container-lg, .container-xl, .container-xxl {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+
+  .border {
+    border: 1px solid #e3e6f0 !important;
+  }
+
+  .border-0 {
+    border: 0 !important;
+  }
+
+  .p-3 {
+    padding: 1rem !important;
+  }
+
+  .text-center {
+    text-align: center !important;
+  }
+
+  .text-white-50 {
+    --bs-text-opacity: 1;
+    color: rgba(255,255,255,.5) !important;
+  }
+
+  .bg-primary {
+    --bs-bg-opacity: 1;
+    background-color: rgba(57,138,255, var(--bs-bg-opacity)) !important;
+  }
+
+  .rounded {
+    border-radius: 0.35rem !important;
+  }
+
+  .row {
+    --bs-gutter-x: 1.5rem;
+    --bs-gutter-y: 0;
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: calc(-1 * var(--bs-gutter-y));
+    margin-right: calc(-.5 * var(--bs-gutter-x));
+    margin-left: calc(-.5 * var(--bs-gutter-x));
+  }
+
+  @media (min-width: 768px) {
+    .row-cols-md-4 > * {
+      flex: 0 0 auto;
+      width: 25%;
+    }
+  }
+
+  .col {
+    flex: 1 0 0%;
+  }
+
+  .row-cols-2 > * {
+    flex: 0 0 auto;
+    width: 50%;
+  }
+
+  h6, .h6, h5, .h5, h4, .h4, h3, .h3, h2, .h2, h1, .h1 {
+    margin-top: 0;
+    margin-bottom: .5rem;
+    font-weight: 400;
+    line-height: 1.2;
+    color: inherit;
+  }
+
+  h4, .h4 {
+    font-size: calc(1.275rem + 0.3vw);
+  }
+
+  @media (min-width: 1200px) {
+    h4, .h4 {
+      font-size: 1.5rem;
+    }
+  }
+
+  .text-white {
+    --bs-text-opacity: 1;
+    color: rgba(255, 255, 255, var(--bs-text-opacity)) !important;
+  }
+
+  .fw-bold {
+    font-weight: 700 !important;
+  }
+
+  .mb-0 {
+    margin-bottom: 0 !important;
+  }
+
+  @media (min-width: 1200px) {
+    .display-5 {
+      font-size: 3rem;
+    }
+  }
+
+  .display-5 {
+    font-size: calc(1.425rem + 2.1vw);
+    font-weight: 300;
+    line-height: 1.2;
+  }
+
+  @media (min-width: 1200px) {
+    .display-5 {
+      font-size: 3rem;
+    }
+  }
+
+  .vstack {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    align-self: stretch;
+  }
+
+
+
+  .hstack {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    align-self: stretch;
+  }
+
+  #wrapper {
+    flex: 1 0 auto;
+  }
+
+
+
+  #wrapper p {
+    font-size: 0.75rem;
+    margin-top: 0;
+    margin-bottom: 1rem;
+  }
+
+  .mb-8 {
+    margin-bottom: 8;
+  }

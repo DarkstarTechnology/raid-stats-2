@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
 import { forkJoin } from 'rxjs';
 import { PlayerService } from '../player.service';
 import { IPlayerStats } from 'src/app/interfaces/player-stats';
@@ -20,40 +20,53 @@ export class PlayerTableComponent implements OnInit {
   resultsLength = 0;
   isLoadingResults = true;
   isRateLimitReached = false;
-
+  loading = true;
   @ViewChild(MatPaginator) paginator: MatPaginator;
   @ViewChild(MatSort) sort: MatSort;
 
-  constructor(private playerService: PlayerService, public dialog: MatDialog) {
+  constructor(private playerService: PlayerService, public dialog: MatDialog, private cdRef: ChangeDetectorRef) {
 
   }
 
   ngOnInit() {
-    db.players.toArray().then(data => {
-      const playerStats$ = data.map(d => this.playerService.getPlayerStats(d));
-      forkJoin(playerStats$).subscribe(s => {
-        this.playerStatsDataSource = new MatTableDataSource(s);
-        this.playerStatsDataSource.paginator = this.paginator;
-        this.playerStatsDataSource.sort = this.sort;
-        this.playerStatsDataSource.sortingDataAccessor = (item, property) => {
-          switch (property) {
-            case 'player.name': return item.player.name;
-            case 'player.race': return item.player.race;
-            case 'avgTime': return item.avgTime;
-            case 'avgPosition': return item.avgPosition;
-            default: return item[property];
-          }
-        };
-      })
-    }).catch(error => console.log("Error retrieving players.", error));
+    this.loadPlayerStats();
+  }
 
+  async loadPlayerStats(): Promise<void> {
+    try {
+      const data = await db.players.toArray();
+
+      const playerStats$ = data.map(d => this.playerService.getPlayerStats(d));
+      const stats = await forkJoin(playerStats$).toPromise(); // Convert Observable to Promise
+
+      this.playerStatsDataSource = new MatTableDataSource(stats);
+      this.playerStatsDataSource.paginator = this.paginator;
+      this.playerStatsDataSource.sort = this.sort;
+
+      this.playerStatsDataSource.sortingDataAccessor = this.getSortingDataAccessor();
+    } catch (error) {
+      console.error("Error occurred while loading player statistics:", error);
+    } finally {
+        this.cdRef.detectChanges();
+        this.isLoadingResults = false;
+    }
+  }
+
+  private getSortingDataAccessor(): (data: any, sortHeaderId: string) => string | number {
+    return (item, property) => {
+      switch (property) {
+        case 'player.name': return item.player.name;
+        case 'player.race': return item.player.race;
+        case 'avgTime': return item.avgTime;
+        case 'avgPosition': return item.avgPosition;
+        default: return item[property];
+      }
+    };
   }
 
   showPlayerStats(player: IPlayerStats) {
     const dialogRef = this.dialog.open(PlayerDialogComponent, { data: player});
   }
-
-
 
   applyFilter(event: Event) {
     const filterValue = (event.target as HTMLInputElement).value;

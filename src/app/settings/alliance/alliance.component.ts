@@ -135,4 +135,24 @@ export class AllianceComponent implements OnInit {
       }
     });
   }
+
+  getAllianceString(alliance: IAlliance) {
+    let rtn: string = '';
+    let primaryString: string = '';
+    for(const [idx,p] of alliance.primary.entries()) {
+       primaryString += (idx - 1 < alliance.primary.length) ? p + ' ' : p;
+    }
+    let secondaryString: string = '';
+    for(const [idx,s] of alliance.secondary.entries()) {
+       secondaryString += (idx - 1 < alliance.secondary.length) ? s + ' ' : s;
+    }
+    if (!alliance.tertiary.includes(Race.None)) {
+        let tertiaryString: string = '';
+        for(const [idx,t] of alliance.tertiary.entries()) {
+           tertiaryString += (idx - 1 < alliance.tertiary.length) ? t + ' ' + ' ' : t;
+        }
+        return `${primaryString}  v.  ${secondaryString}  v.  ${tertiaryString}`;
+    }
+    return `${primaryString}  v.  ${secondaryString}`;
+  }
 }

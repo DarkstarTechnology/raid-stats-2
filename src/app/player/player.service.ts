@@ -1,62 +1,58 @@
 import { Injectable } from '@angular/core';
 import { Player, db } from '../processor/db';
 import { IPlayerStats } from '../interfaces/player-stats';
-import { Observable, concatMap, from, map, switchMap } from 'rxjs';
 import { liveQuery } from 'dexie';
 
 @Injectable({
-  providedIn: 'root',
+    providedIn: 'root',
 })
 export class PlayerService {
-  constructor() {}
+    constructor() {}
 
-  async listPlayers() {
-    return await db.players.toArray();
-  }
+    async listPlayers() {
+        return await db.players.toArray();
+    }
 
-  getPlayerStats(player: Player): Observable<IPlayerStats> {
-    console.log('Players name: ' + player.name);
-    return from(
-      db.playersInRaid
-        .filter((p) => p.name === player.name)
-        .toArray()
-        .then((raids) => raids)
-    ).pipe(
-      concatMap((raids) => {
-        const pir = raids.filter((x) => x.isSnipe !== true);
-        const snipes = raids.filter((x) => x.isSnipe === true).length;
+    async getPlayerStats(player: Player): Promise<IPlayerStats> {
+        console.log(`Player's name: ${player.name}`);
+        try {
+            const raids = await db.playersInRaid
+                .filter((p) => p.name === player.name)
+                .toArray();
+            const allRaids = await db.raids.toArray();
 
-        let totalRaids = pir.length;
-        let avgPosition = pir.reduce((acc, cur) => acc + cur.position, 0) / totalRaids;
-        let avgTime = pir.reduce((acc, curr) => acc + curr.time, 0) / totalRaids;
+            const participatingInRaids = raids.filter((x) => !x.isSnipe);
+            const snipes = raids.length - participatingInRaids.length;
+            const totalRaids = participatingInRaids.length;
 
-        // Fetch all raids asynchronously
-        return from(
-          db.raids
-            .toArray()
-            .then((allRaids) => {
-              return allRaids;
-            })
-            .catch((error) => {
-              console.error('Error fetching raids:', error);
-              return [];
-            })
-        ).pipe(
-          map((allRaids) => {
-            let raidParticipation = totalRaids / allRaids.length;
+            const avgPosition =
+                totalRaids > 0
+                    ? participatingInRaids.reduce(
+                          (acc, cur) => acc + cur.position,
+                          0
+                      ) / totalRaids
+                    : 0;
+            const avgTime =
+                totalRaids > 0
+                    ? participatingInRaids.reduce(
+                          (acc, curr) => acc + curr.time,
+                          0
+                      ) / totalRaids
+                    : 0;
+            const raidParticipation =
+                allRaids.length > 0 ? totalRaids / allRaids.length : 0;
 
-            // Return the player stats object
             return {
-              player: player,
-              totalRaids: totalRaids,
-              avgPosition: avgPosition,
-              avgTime: avgTime,
-              raidParticipation: raidParticipation,
-              snipeAttempts: snipes,
+                player,
+                totalRaids,
+                avgPosition,
+                avgTime,
+                raidParticipation,
+                snipeAttempts: snipes,
             };
-          })
-        );
-      })
-    );
-  }
+        } catch (error) {
+            console.error('Error fetching player or raids data:', error);
+            throw error;
+        }
+    }
 }
