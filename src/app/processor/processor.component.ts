@@ -17,7 +17,7 @@ export class ProcessorComponent {
   isRunning: boolean = false;
   progressValue: number = 0;
   progressTotal: number = 0;
-
+  currentBossNameEmitter$ = this.processor.bossNameEmitter$;
   constructor(private processor: ProcessorService) {}
 
   addEvent(type: string, event: MatDatepickerInputEvent<Date>) {

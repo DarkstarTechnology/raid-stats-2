@@ -33,7 +33,7 @@
         <mat-radio-button class="range-radio-button" *ngFor="let option of rangeOptions" [value]="option">
           {{option}}
         </mat-radio-button>
-        
+
       </mat-radio-group>
       <div *ngIf="rangeSetting == 'Set Total'; else dateBlock">
       <div class="slider-label-container">
@@ -80,6 +80,7 @@
       <button mat-raised-button [disabled]="!isRunning" color="warn">Stop</button>
     </div>
     <div *ngIf="isRunning" class="progress">
+      <div class="current-boss">{{ currentBossNameEmitter$ | async }}</div>
       <mat-progress-bar [value]="progValue"></mat-progress-bar>
     </div>
   </mat-card-content>

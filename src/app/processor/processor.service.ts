@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { IAlliance, Player, Race, Raid, db } from './db';
 
 import { HttpClient } from '@angular/common/http';
+import { Subject } from 'rxjs';
 //import { RateLimiter } from 'limiter';
 
 const attackMatch = /!(melee|mage|magic|range)/i;
@@ -11,6 +12,8 @@ const attackMatch = /!(melee|mage|magic|range)/i;
 })
 export class ProcessorService {
   progress: number = 0;
+  private bossNameEmitter = new Subject<string>();
+  bossNameEmitter$ = this.bossNameEmitter.asObservable();
   /* private rateLimiter = new RateLimiter({
     tokensPerInterval: 100,
     interval: 600000,
@@ -326,6 +329,7 @@ export class ProcessorService {
         const jsonUrl = `${url}.json?raw_json=1`;
         //const tokensRemaining = await this.rateLimiter.removeTokens(1);
         const raidData = await this.fetchJson(jsonUrl);
+        this.bossNameEmitter.next(raidData[0].data.children[0].data.title as string);
         await this.processRaid(raidData, raidId);
       }
       this.progress = (counter / total) * 100;
