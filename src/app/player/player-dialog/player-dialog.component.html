@@ -3,11 +3,11 @@
         <mat-card>
             <mat-card-header>
                 <div mat-card-avatar >
-                    <img [src]="getImageUrl(stats.player.name)" class="player-avatar-image">
+                    <img [src]="getImageUrl(stats.name)" class="player-avatar-image">
                 </div>
                 <mat-card-title>
-                    {{ stats.player.name }}
-                    <ng-container [ngSwitch]="stats.player.race">
+                    {{ stats.name }}
+                    <ng-container [ngSwitch]="stats.race">
                         <ng-template [ngSwitchCase]="race.Plant">
                             <svg
                                 id="b"
@@ -211,32 +211,32 @@
                 <div id="wrapper">
                     <div class="hstack text-center">
                         <div class="vstack">
-                            <h4>{{ stats.totalRaids }}</h4>
+                            <h4>{{ stats.total_raids }}</h4>
                             <p>Total Raids</p>
                         </div>
                         <div class="vstack">
-                            <h4>{{ stats.raidParticipation | percent : "1.2-2" }}</h4>
+                            <h4>{{ stats.participation | percent : "1.2-2" }}</h4>
                             <p>Raid Participation</p>
                         </div>
                     </div>
                     <div class="hstack text-center">
                         <div class="vstack">
-                            <h4>{{ stats.avgTime | number : "1.2-2" }}</h4>
+                            <h4>{{ stats.avg_time | number : "1.2-2" }}</h4>
                             <p>Average Time</p>
                         </div>
                         <div class="vstack">
-                            <h4>{{ stats.avgPosition | number : "1.2-2" }}</h4>
+                            <h4>{{ stats.avg_position | number : "1.2-2" }}</h4>
                             <p>Average Position</p>
                         </div>
                     </div>
                     <div class="hstack text-center">
                         <div class="vstack">
-                            <h4>{{ stats.snipeAttempts }}</h4>
+                            <h4>{{ stats.snipe_attempts }}</h4>
                             <p>Snipe Attempts</p>
                         </div>
                         <div class="vstack">
-                            <h4>{{ stats.avgPosition | number : "1.2-2" }}</h4>
-                            <p>Average Position</p>
+                            <h4>{{ stats.snipe_ratio | number : "1.2-2" }}</h4>
+                            <p>Snipe Ratio</p>
                         </div>
                     </div>
                 </div>

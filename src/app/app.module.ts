@@ -1,4 +1,4 @@
-import { NgModule } from '@angular/core';
+import { NgModule, inject } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 
 import { AppRoutingModule } from './app-routing.module';
@@ -32,19 +32,27 @@ import { AllianceComponent } from './settings/alliance/alliance.component';
 import { AllianceService } from './settings/alliance/alliance.service';
 import { AllianceResolver } from './settings/alliance/alliance.resolver';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
-import { PlayerComponent } from './player/player.component';
 import { MatRippleModule } from '@angular/material/core';
 import { MatTableModule } from '@angular/material/table';
 import { PlayerTableComponent } from './player/player-table/player-table.component';
-import {MatPaginatorModule} from '@angular/material/paginator';
-import {MatSortModule} from '@angular/material/sort';
+import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatSortModule } from '@angular/material/sort';
 import { MatDialogModule} from '@angular/material/dialog';
 import { PlayerDialogComponent } from './player/player-dialog/player-dialog.component';
-import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { NavigationDirective } from './shared/navigation.directive';
 import { NgxChartsModule } from '@swimlane/ngx-charts';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatTableResponsiveModule } from './shared/mat-table-responsive/mat-table-responsive.module';
+import { PlayerDataInitService } from './utils/player-data-init.service';
+import { DatePipe } from '@angular/common';
+import { StatsTableComponent } from './player/stats-table/stats-table.component';
+
+/* export function initData(playerDataInit: PlayerDataInitService) {
+  return () => {
+     return inject(PlayerDataInitService).observable.pipe(a);
+  };
+} */
 
 @NgModule({
   declarations: [
@@ -54,10 +62,10 @@ import { MatTableResponsiveModule } from './shared/mat-table-responsive/mat-tabl
     SettingsComponent,
     ProcessorComponent,
     AllianceComponent,
-    PlayerComponent,
     PlayerTableComponent,
     PlayerDialogComponent,
-    NavigationDirective
+    NavigationDirective,
+    StatsTableComponent
 
   ],
   imports: [
@@ -93,7 +101,12 @@ import { MatTableResponsiveModule } from './shared/mat-table-responsive/mat-tabl
     MatProgressSpinnerModule,
     NgxChartsModule,
     MatSlideToggleModule,
-    MatTableResponsiveModule
+    MatTableResponsiveModule,
+    MatProgressSpinnerModule,
+    MatTableModule,
+    MatSortModule,
+    MatPaginatorModule,
+    DatePipe
   ],
   providers: [
     {provide: MAT_MOMENT_DATE_ADAPTER_OPTIONS, useValue: {useUtc: true}},

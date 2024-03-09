@@ -1,6 +1,6 @@
 import { Component, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { IPlayerStats } from 'src/app/interfaces/player-stats';
+import { IPlayerStats, PlayerStats } from 'src/app/interfaces/player-stats';
 import { Observable } from 'rxjs';
 import { Race } from 'src/app/processor/db';
 
@@ -15,7 +15,7 @@ export class PlayerDialogComponent {
     imageKitBaseUrl = 'https://ik.imagekit.io/kotd/';
 
     public race = Race;
-    constructor(@Inject(MAT_DIALOG_DATA) public playerStats: IPlayerStats) {}
+    constructor(@Inject(MAT_DIALOG_DATA) public playerStats: PlayerStats) {}
 
     getImageUrl(fileName: string): string {
         return `${this.imageKitBaseUrl}${fileName}.webp`;

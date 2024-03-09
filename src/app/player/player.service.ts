@@ -1,58 +1,39 @@
-import { Injectable } from '@angular/core';
-import { Player, db } from '../processor/db';
-import { IPlayerStats } from '../interfaces/player-stats';
-import { liveQuery } from 'dexie';
+import { Injectable, computed, inject } from '@angular/core';
+import { PlayerStats } from '../interfaces/player-stats';
+import { HttpClient } from '@angular/common/http';
+import { BehaviorSubject, catchError, combineLatest, map, of, shareReplay } from 'rxjs';
+import { HttpErrorService } from '../utils/http-error.service';
+import { Result } from '../interfaces/result';
+import { toSignal } from '@angular/core/rxjs-interop';
 
 @Injectable({
     providedIn: 'root',
 })
 export class PlayerService {
-    constructor() {}
+    constructor() { }
+    private playerInRaidUrl = 'api/playerInRaid';
+    private requestUrl$ = new BehaviorSubject<string>(`?sort=name&order=asc&limit=25&offset=0`);
+    private http = inject(HttpClient);
+    private errorService = inject(HttpErrorService);
+    
+    
 
-    async listPlayers() {
-        return await db.players.toArray();
-    }
+    private playerStatsResult$ = this.http.get<PlayerStats[]>(`this.playerInRaidUrl${this.requestUrl$.value}`)
+        .pipe(
+            map((ps) => ({ data: ps } as Result<PlayerStats[]>)),
+            shareReplay(1),
+            catchError(err => of({
+                data: [],
+                error: this.errorService.formatError(err)
+            } as Result<PlayerStats[]>))
+        );
 
-    async getPlayerStats(player: Player): Promise<IPlayerStats> {
-        console.log(`Player's name: ${player.name}`);
-        try {
-            const raids = await db.playersInRaid
-                .filter((p) => p.name === player.name)
-                .toArray();
-            const allRaids = await db.raids.toArray();
+    private playerStatsResult = toSignal(this.playerStatsResult$,
+        { initialValue: ({ data: [] } as Result<PlayerStats[]>) });
 
-            const participatingInRaids = raids.filter((x) => !x.isSnipe);
-            const snipes = raids.length - participatingInRaids.length;
-            const totalRaids = participatingInRaids.length;
+    playerStats = computed(() => this.playerStatsResult().data);
+    playerStatsError = computed(() => this.playerStatsResult().error);
 
-            const avgPosition =
-                totalRaids > 0
-                    ? participatingInRaids.reduce(
-                          (acc, cur) => acc + cur.position,
-                          0
-                      ) / totalRaids
-                    : 0;
-            const avgTime =
-                totalRaids > 0
-                    ? participatingInRaids.reduce(
-                          (acc, curr) => acc + curr.time,
-                          0
-                      ) / totalRaids
-                    : 0;
-            const raidParticipation =
-                allRaids.length > 0 ? totalRaids / allRaids.length : 0;
-
-            return {
-                player,
-                totalRaids,
-                avgPosition,
-                avgTime,
-                raidParticipation,
-                snipeAttempts: snipes,
-            };
-        } catch (error) {
-            console.error('Error fetching player or raids data:', error);
-            throw error;
-        }
-    }
+    
+        
 }

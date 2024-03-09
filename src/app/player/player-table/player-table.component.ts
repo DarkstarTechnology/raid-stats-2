@@ -1,13 +1,14 @@
-import { AfterViewInit, ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
-import { forkJoin } from 'rxjs';
+import { AfterViewInit, ChangeDetectorRef, Component, OnInit, ViewChild, inject } from '@angular/core';
+import { combineLatest, firstValueFrom, forkJoin } from 'rxjs';
 import { PlayerService } from '../player.service';
 import { IPlayerStats } from 'src/app/interfaces/player-stats';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
-import { db } from 'src/app/processor/db';
+import { Player, db } from 'src/app/processor/db';
 import { MatDialog } from '@angular/material/dialog';
 import { PlayerDialogComponent } from '../player-dialog/player-dialog.component';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-player-table',
@@ -17,27 +18,30 @@ import { PlayerDialogComponent } from '../player-dialog/player-dialog.component'
 export class PlayerTableComponent implements OnInit {
   displayedColumns: string[] = ['player.name', 'player.race','avgTime','avgPosition'];
   playerStatsDataSource: MatTableDataSource<IPlayerStats>;
+  data: IPlayerStats[] = [];
   resultsLength = 0;
   isLoadingResults = true;
   isRateLimitReached = false;
   loading = true;
   @ViewChild(MatPaginator) paginator: MatPaginator;
   @ViewChild(MatSort) sort: MatSort;
-
+  players: Player[] = [];
   constructor(private playerService: PlayerService, public dialog: MatDialog, private cdRef: ChangeDetectorRef) {
 
   }
-
+  http = inject(HttpClient);
+  
   ngOnInit() {
+    
     this.loadPlayerStats();
   }
 
   async loadPlayerStats(): Promise<void> {
-    try {
-      const data = await db.players.toArray();
+    /* try {
+      const [data] = await firstValueFrom(combineLatest([this.playerService.players$])); // Convert Observable to Promise
 
       const playerStats$ = data.map(d => this.playerService.getPlayerStats(d));
-      const stats = await forkJoin(playerStats$).toPromise(); // Convert Observable to Promise
+      const stats = await firstValueFrom(combineLatest(playerStats$)); // Convert Observable to Promise
 
       this.playerStatsDataSource = new MatTableDataSource(stats);
       this.playerStatsDataSource.paginator = this.paginator;
@@ -49,7 +53,7 @@ export class PlayerTableComponent implements OnInit {
     } finally {
         this.cdRef.detectChanges();
         this.isLoadingResults = false;
-    }
+    } */
   }
 
   private getSortingDataAccessor(): (data: any, sortHeaderId: string) => string | number {
