@@ -1,7 +1,12 @@
-import { Injectable } from '@angular/core';
+import { Injectable, computed, inject } from '@angular/core';
 import { IAlliance, Player, Race, Raid, db } from '../processor/db';
-import { EMPTY, Observable, catchError, defer, forkJoin, groupBy, map, mergeMap, of, reduce, toArray } from 'rxjs';
+import { EMPTY, Observable, catchError, defer, forkJoin, groupBy, map, mergeMap, of, reduce, shareReplay, toArray } from 'rxjs';
 import * as moment from 'moment';
+import { HttpClient } from '@angular/common/http';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { Result } from '../interfaces/result';
+import { HttpErrorService } from '../utils/http-error.service';
+import { LineChartSeries } from '../interfaces/line-chart-series';
 
 export interface IGroupStats {
   daily$: Observable<{ group: string, raids: any[]}[]>;
@@ -19,7 +24,26 @@ export interface GroupedStats {
 export class DashboardService {
   raidsByDay: any;
 
-  constructor() { }
+  private dailyAllianceStatsUrl = 'api/alliance/daily';
+
+  private http = inject(HttpClient);
+  private errorService = inject(HttpErrorService);
+
+  private dailyAllianceStatsResult$ = this.http.get<LineChartSeries[]>(this.dailyAllianceStatsUrl)
+    .pipe(
+      map(r => ({ data: r } as Result<LineChartSeries[]>)),
+      shareReplay(1),
+      catchError(err => of({
+        data: [],
+        error: this.errorService.formatError(err)
+      } as Result<LineChartSeries[]>))
+    );
+  
+  private dailyAllianceStatsResult = toSignal(this.dailyAllianceStatsResult$,
+    { initialValue: { data: [] } as Result<LineChartSeries[]> });
+  dailyAllianceStats = computed(() => this.dailyAllianceStatsResult().data);
+  dailyAllianceStatsError = computed(() => this.dailyAllianceStatsResult().error);
+  
 
   getRaids(): Observable<Raid[]> {
     return defer(async () => {

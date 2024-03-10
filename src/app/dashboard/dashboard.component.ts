@@ -7,6 +7,7 @@ import { Raid } from '../processor/db';
 import { NavigationEnd, Router } from '@angular/router';
 import { Subject, Subscription } from 'rxjs';
 import { LegendPosition, ScaleType } from '@swimlane/ngx-charts';
+import { exportIndexedDB } from '../processor/db';
 
 @Component({
     selector: 'app-dashboard',
@@ -46,13 +47,19 @@ export class DashboardComponent implements OnInit, OnDestroy {
     timeline: boolean = false;
     lineChartView: [number, number] = [700, 300];
     colorScheme = 'aqua';
-    lineScheme = 'vivid';
-    roundDomains = true;
-    /* colorScheme = {
-    domain: ['#5AA454', '#E44D25', '#CFC0BB', '#7aa3e5', '#a8385d', '#aae3f5']
-  }; */
-    cardColor: string = '#20262d';
-    xScaleMin: any;
+        lineScheme = 'vivid';
+        roundDomains = true;
+        xAxisTickFormatting = (value) => {
+                const date = new Date(value);
+                const options = { year: '2-digit', month: 'short', day: '2-digit' } as Intl.DateTimeFormatOptions;
+                const shortUTCDate = date.toLocaleDateString('en-US', options);
+                return shortUTCDate;
+        };
+        /* colorScheme = {
+        domain: ['#5AA454', '#E44D25', '#CFC0BB', '#7aa3e5', '#a8385d', '#aae3f5']
+    }; */
+        cardColor: string = '#20262d';
+        xScaleMin: any;
 
     constructor(
         private dashboardService: DashboardService,
@@ -61,6 +68,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     ) {}
 
     async ngOnInit() {
+        //exportIndexedDB('RaidDatabase');
         await this.processor.loadRaidResults(50);
         this.loadData();
 
@@ -105,7 +113,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
                         this.totalRaids / Object.keys(dailyGroups).length;
 
                     this.calculateChartData();
-                    this.calculateAllianceSeries();
+                    //this.calculateAllianceSeries();
+                    this.lineChartData = this.dashboardService.dailyAllianceStats();
                     this.isLoading = false;
                 }
             });

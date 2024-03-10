@@ -261,3 +261,46 @@ db.open().then(() => {
     })
     .catch((error) => console.error('Error initializing database:', error));
 });
+
+function downloadExportedData(dbName, data) {
+  const json = JSON.stringify(data);
+  const blob = new Blob([json], {type: "application/json"});
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${dbName}.json`;
+  document.body.appendChild(a); // Required for Firefox
+  a.click();
+  a.remove();
+  
+  URL.revokeObjectURL(url);
+}
+
+export function exportIndexedDB(dbName) {
+  const dbRequest = indexedDB.open(dbName);
+  dbRequest.onsuccess = function(event) {
+    // Correctly type-cast the event target to an IDBRequest
+    const db = (event.target as IDBRequest).result;
+    const data = {};
+    const stores = db.objectStoreNames;
+
+    let storeCount = stores.length;
+    for (const storeName of stores) {
+      const transaction = db.transaction(storeName, 'readonly');
+      const store = transaction.objectStore(storeName);
+
+      store.getAll().onsuccess = function(event) {
+        // Again, cast the event target correctly
+        data[storeName] = (event.target as IDBRequest).result;
+        storeCount--;
+        if (storeCount === 0) { // All stores have been processed
+          downloadExportedData(dbName, data);
+        }
+      };
+    }
+  };
+  dbRequest.onerror = function(event) {
+    console.error('Error opening database:', dbRequest.error);
+  };
+}

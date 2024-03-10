@@ -151,14 +151,15 @@ app.get('/api/alliance', async (req, res) => {
   }
 });
 
-/* app.get('/api/playerStats', async (req, res) => {
+app.get('/api/alliance/daily', async (req, res) => {
   try {
-    const result = await queryWithRetry('SELECT * FROM public.player_stats', []);
-    res.json(result.rows);
+    const result = await queryWithRetry('SELECT * FROM public.daily_alliance_stats', []);
+    const lineSeries = transformStatsToLineSeries(result.rows);
+    res.json(lineSeries);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
-}); */
+});
 
 app.get('/api/playerStats', async (req, res) => {
   const sort = req.query.sort || 'name'; 
@@ -194,3 +195,22 @@ app.get('/api/playerStats', async (req, res) => {
   }
 });
 
+function transformStatsToLineSeries(statsArray) {
+  // Group by race_group
+  const groupedByRaceGroup = statsArray.reduce((acc, curr) => {
+      acc[curr.race_group] = acc[curr.race_group] || [];
+      acc[curr.race_group].push({
+          name: (new Date(curr.raid_day)).toISOString(),
+          value: curr.kills
+      });
+      return acc;
+  }, {});
+
+  // Map to LineSeries
+  const lineSeriesArray = Object.keys(groupedByRaceGroup).map(raceGroup => ({
+      name: raceGroup,
+      series: groupedByRaceGroup[raceGroup]
+  }));
+
+  return lineSeriesArray;
+}
